@@ -27,4 +27,4 @@ class Butler(object):
   def clean(self):
     return CClean()
 
-butler=Butler()
+Butler=Butler()

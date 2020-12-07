@@ -3,23 +3,34 @@
 
 from ..util.ccolor import CColor
 from ..util.ccolorizer import CColorizer
+from ..util.constants import BUTLERCONSTANT
+import uuid
 
 class CAsk:
 
+  __stepid=None
+
   def __init__(self):
-    pass
+    self.__stepid=uuid.uuid1().hex
 
-  def __formatQuestion(self, question: str, answer: [str]=None):
-    if not answer:
-      return "{} | ".format(question)
-    return "{} [{}] | ".format(question, CColorizer.print("/".join(answer), CColor.FOREGROUNDYELLOW))
+  def __formatQuestion(self, question: str, answer: [str]=None, mandatory: bool=False):
+    if answer:
+      return "{} {} [{}] | ".format(CColorizer.print(BUTLERCONSTANT.STRINGS.MANDATORY, CColor.FOREGROUNDRED), question, CColorizer.print("/".join(answer), CColor.FOREGROUNDYELLOW))
+    if mandatory:
+      return "{} {} | ".format(CColorizer.print(BUTLERCONSTANT.STRINGS.MANDATORY, CColor.FOREGROUNDRED), question)
+    return "{} {} {} | ".format(CColorizer.print(BUTLERCONSTANT.STRINGS.OPTIONAL, CColor.FOREGROUNDBLUE), question, BUTLERCONSTANT.STRINGS.SKIPWITHENTER)
 
-  def step(self, stepId: any, question: str, answer: [str]=None):
-    if not stepId and not question:
+  def step(self, question: str, answer: [str]=None, mandatory: bool=False):
+    if not question:
       return
     userAnswer=""
-    if not answer:
-      userAnswer=input(self.__formatQuestion(question))
-      return
-    while userAnswer not in answer:
-      userAnswer=input(self.__formatQuestion(question, answer))
+    if answer: #questions with answers are always mandatory
+      while userAnswer not in answer:
+        userAnswer=input(self.__formatQuestion(question, answer, mandatory))
+      return userAnswer.strip()
+    while mandatory:
+      userAnswer=input(self.__formatQuestion(question, answer, mandatory))
+      if userAnswer.strip():
+        mandatory=False
+        return userAnswer.strip()
+    return input(self.__formatQuestion(question, answer, mandatory)).strip()
